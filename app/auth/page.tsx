@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+
 import {
   Card,
   CardContent,
@@ -10,8 +11,66 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import prisma from "@/prisma/client";
+import { hash } from "bcryptjs";
+import { redirect } from "next/navigation";
+import { z } from "zod";
+import Toast from "../Components/Toast";
+
+const schema = z.object({
+  name: z.string(),
+  email: z.string().email(),
+  password: z.string().min(5),
+});
 
 const AuthPage = () => {
+  const SignUp = async (formData: FormData) => {
+    "use server";
+
+    const UserEmail = formData.get("email");
+    const UserName = formData.get("name");
+    const UserPassword = formData.get("password");
+    const data = {
+      name: UserName,
+      email: UserEmail,
+      password: UserPassword,
+    };
+    const validation = schema.safeParse(data);
+
+    console.log(validation);
+
+    if (!validation.success) {
+      <Toast type="error" message="Please Enter All Fields" />;
+      return;
+    }
+
+    //Find User
+    const User = await prisma.user.findFirst({
+      where: { email: UserEmail as string },
+    });
+
+    if (User) {
+      return;
+    }
+
+    const hashedPassword = await hash(UserPassword as string, 10);
+
+    console.log({
+      name: UserName,
+      email: UserEmail,
+      password: hashedPassword,
+    });
+
+    //   const user = await prisma.user.create({
+    //     data: {
+    //       email: UserEmail,
+    //       name: UserName,
+    //       password: hashedPassword,
+    //     },
+    //   });
+    redirect("/auth");
+  };
+
   return (
     <div className="w-screen h-screen flex items-center justify-center">
       <Tabs defaultValue="signIn" className="w-[400px]">
@@ -52,22 +111,34 @@ const AuthPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
-              <div className="space-y-1">
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" type="text" placeholder="Name" />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="text" placeholder="Email" />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" placeholder="Password" />
-              </div>
+              <form action={SignUp}>
+                <div className="space-y-1">
+                  <Label htmlFor="name">Name</Label>
+                  <Input id="name" type="text" placeholder="Name" name="name" />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="text"
+                    placeholder="Email"
+                    name="email"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Password"
+                    name="password"
+                  />
+                </div>
+                <Button className="mt-3" type="submit">
+                  Sign Up
+                </Button>
+              </form>
             </CardContent>
-            <CardFooter>
-              <Button>Sign Up</Button>
-            </CardFooter>
           </Card>
         </TabsContent>
       </Tabs>

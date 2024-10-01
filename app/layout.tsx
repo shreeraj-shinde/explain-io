@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Urbanist } from "next/font/google";
-import { Toaster } from "@/components/ui/toaster";
-
+import { Toaster } from "@/components/ui/sonner";
 import AuthSessionProvider from "./AuthSessionProvider";
 
 const urbanist = Urbanist({
@@ -25,10 +24,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${urbanist.variable}  antialiased`}>
-        <AuthSessionProvider>
-          {children}
-          <Toaster />
-        </AuthSessionProvider>
+        <AuthSessionProvider>{children}</AuthSessionProvider>
+        <Toaster />
       </body>
     </html>
   );

@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import prisma from "./prisma/client";
-import { compare } from "bcrypt";
+import { compare } from "bcryptjs";
 import { z } from "zod";
 import { toast } from "./hooks/use-toast";
 
